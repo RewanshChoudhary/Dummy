@@ -48,6 +48,7 @@ Return only the JSON object.
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
+
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
 coll = db[MONGO_COLLECTION]
@@ -69,17 +70,17 @@ def extract_ocr_from_pdf(pdf_path):
 def extract_syllabus_json(ocr_text):
     prompt = GEMINI_PROMPT + "\n\nOCR TEXT STARTS BELOW:\n\n" + ocr_text
 
-    # Request Gemini output as a dict to prevent blank responses
+   
     response = model.generate_content(
         prompt,
         generation_config={"response_mime_type": "application/json"}
     )
 
 
-    # If response.text is empty, raise a clearer error
+   
     raw = response.text
     if raw is None or raw.strip() == "":
-        raise ValueError("Gemini returned EMPTY output. Check OCR or prompt.")
+        raise ValueError("Gemini returnedempty output check OCR or prompt.")
 
     return json.loads(raw)
 
@@ -96,10 +97,6 @@ def store_in_mongo(course_code, syllabus_json):
         doc,                           
         upsert=True                    
     )
-
-
-
-
 
 
 
