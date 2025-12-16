@@ -1,4 +1,7 @@
 from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+
 load.dotenv()
 PDF_DIR = os.getenv("PDF_DIR")
 MONGO_URI = os.getenv("MONGO_URI")
