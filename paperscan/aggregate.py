@@ -1,85 +1,44 @@
-from pymongo import MongoClient
-import os
 from dotenv import load_dotenv
-
-load.dotenv()
-PDF_DIR = os.getenv("PDF_DIR")
+from pymongo import MongoClient
+load_dotenv()
+QUESTION_DIR = os.getenv("QUESTION_DIR")
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB = os.getenv("MONGO_DB")
-MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION_SYLLABUS")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-2.5-flash")
+
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
-syllabus_collection = db[MONGO_COLLECTION]
+prompt=
+
+stats_col = db["topic_stats"]
+from pdf2image import convert_from_path
+import pytesseract
+
+def ocr_pdf(pdf_path: str):
+    pages = convert_from_path(pdf_path, dpi=300)
+
+    ocr_pages = []
+    for i, page in enumerate(pages):
+        text = pytesseract.image_to_string(page)
+        ocr_pages.append({
+            "page": i + 1,
+            "text": text
+        })
+
+    return ocr_pages
 
 
-def analyze_paper(paper_text, syllabus_topics):
-    prompt = f"""You are given an academic syllabus.
-
-Your task is to extract syllabus topics relevant to a specific exam and return a structured count of how many times each topic is covered or implied.
-
-Rules:
-
-Use only topics that appear explicitly in the syllabus.
-
-Do not invent, rename, or merge topics.
-
-If a topic is not relevant to the exam, omit it.
-
-Count indirect mentions via subtopics or equivalent phrasing.
-
-Output must be valid JSON only.
-
-Do not include explanations or extra text.
-
-Preserve exact key order and naming.
-
-Input:
-
-Course code: BITE301L
-
-Exam: CAT-1
-
-Syllabus text is provided below.
-
-Required output schema:
-
-{
-  "course_code": "BITE301L",
-  "exam": "CAT-1",
-  "topics": [
-    {
-      "topic_name": "string",
-      "count": number
-    }
-  ]
-}
-
-
-Syllabus:
-
-{{SYLLABUS_TEXT}}
-
-
-Generate the JSON now.
-"""
-
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
+def call_llm(prompt: str) -> dict:
+    response = model.generate_content(
+        prompt,
+        generation_config={"response_mime_type": "application/json"}
     )
+    
 
-    return response.text
-
-def extract_topics_from_syllabus(doc):
-    syllabus = doc["extracted_syllabus"]
-    topic_list = []
-
-    for module in syllabus["modules"]:
-        for topic in module["topics"]:
-            topic_list.append({
-                "module": module["module_title"],
-                "topic": topic
-            })
-
-    return topic_list
+    
+    return json.loads(content)
