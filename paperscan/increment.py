@@ -36,3 +36,4 @@ def clean_topics():
        topics_blob = module["topics"][0]
        topic_in_module = split_topics(topics_blob)
        print("MODULE:", module["module_number"], topic_in_module)
+
